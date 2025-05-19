@@ -21,24 +21,39 @@ router.post('/', authenticateToken, (req, res) => {
 });
 
 router.get('/', authenticateToken, (req, res) => {
-  const { page = 1, limit = 10, tag } = req.query;
+  const page  = parseInt(req.query.page,  10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
   const offset = (page - 1) * limit;
-  let query = `SELECT * FROM insights WHERE user_id = ?`;
-  const params = [req.user.id];
+  const tag    = req.query.tag;
 
+  let countQuery  = 'SELECT COUNT(*) AS count FROM insights WHERE user_id = ?';
+  const countParams = [req.user.id];
   if (tag) {
-    query += ` AND tags LIKE ?`;
-    params.push(`%${tag}%`);
+    countQuery += ' AND tags LIKE ?';
+    countParams.push(`%${tag}%`);
   }
-  query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-  params.push(Number(limit), offset);
 
-  db.all(query, params, (err, rows) => {
-    if (err) return res.status(500).json({ error: 'Erro ao buscar insights' });
-    const data = rows.map(r => ({ ...r, tags: parseTags(r) }));
-    res.json({ page: Number(page), limit: Number(limit), insights: data });
+  db.get(countQuery, countParams, (countErr, countRow) => {
+    if (countErr) return res.status(500).json({ error: 'Erro ao contar insights' });
+    const total = countRow.count;
+
+    let dataQuery = 'SELECT * FROM insights WHERE user_id = ?';
+    const dataParams = [req.user.id];
+    if (tag) {
+      dataQuery += ' AND tags LIKE ?';
+      dataParams.push(`%${tag}%`);
+    }
+    dataQuery += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    dataParams.push(limit, offset);
+
+    db.all(dataQuery, dataParams, (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Erro ao buscar insights' });
+      const insights = rows.map(r => ({ ...r, tags: parseTags(r) }));
+      res.json({ page, limit, total, insights });
+    });
   });
 });
+
 
 router.get('/:id', authenticateToken, (req, res) => {
   db.get(
