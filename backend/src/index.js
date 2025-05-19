@@ -1,21 +1,20 @@
 require('dotenv').config();
 const express = require('express');
-const db = require('./config/db');
+const bodyParser = require('body-parser');
+const authRoutes = require('./routes/auth');
+const insightsRoutes = require('./routes/insights');
 
 const app = express();
-app.use(express.json());
+app.use(bodyParser.json());
 
-app.get('/health', async (req, res) => {
-  try {
-    const users = await db('users').limit(1);
-    res.json({ ok: true, sample: users });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ ok: false, error: err.message });
-  }
+app.use('/auth', authRoutes);
+app.use('/insights', insightsRoutes);
+
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Erro interno' });
 });
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`API rodando na porta ${PORT}`));
