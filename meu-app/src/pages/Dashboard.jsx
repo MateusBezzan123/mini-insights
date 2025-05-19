@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import InsightList from '../components/InsightList';
@@ -7,10 +6,9 @@ import TagFilter from '../components/TagFilter';
 
 export default function Dashboard() {
   const { logout } = useAuth();
-  const [editing, setEditing] = useState(null); // null = sem formulário
+  const [editing, setEditing] = useState(null);
   const [filterTag, setFilterTag] = useState('');
 
-  // volta ao estado “sem formulário”
   const refresh = () => setEditing(null);
 
   return (
@@ -24,10 +22,8 @@ export default function Dashboard() {
 
       <button onClick={() => setEditing({})}>Novo Insight</button>
 
-      {/* só renderiza se editing for um objeto */}
       {editing !== null && (
         <InsightForm
-          // se vier um objeto vazio (novo), passa null para editar, senão passa o próprio objeto
           editInsight={editing.id ? editing : null}
           onSaved={refresh}
         />
