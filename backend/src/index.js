@@ -1,10 +1,17 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');              // ← importe o cors
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const insightsRoutes = require('./routes/insights');
 
 const app = express();
+
+
+app.use(cors({
+  origin: 'http://localhost:3001'
+}));
+
 app.use(bodyParser.json());
 
 app.use('/auth', authRoutes);
