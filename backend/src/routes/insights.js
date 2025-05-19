@@ -53,7 +53,6 @@ router.get('/:id', authenticateToken, (req, res) => {
   );
 });
 
-// UPDATE
 router.put('/:id', authenticateToken, (req, res) => {
   const { title, content, tags } = req.body;
   const tagsJson = JSON.stringify(tags || []);
